@@ -1,0 +1,6 @@
+build/*
+dist/*
+oleg_flask_sessions.egg-info/*
+*.swp
+*.swo
+
