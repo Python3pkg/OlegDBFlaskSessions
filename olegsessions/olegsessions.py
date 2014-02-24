@@ -64,7 +64,7 @@ class OlegDBSessionInterface(SessionInterface):
 
         connect_str = self._build_host_str(app.name, session.sid)
         resp = requests.post(connect_str,
-                data=json.dumps(data), headers={'content-type': 'application/json'})
+                data=json.dumps(data), headers={'Content-Type': 'application/json'})
 
         response.set_cookie(app.session_cookie_name, session.sid,
             expires=self.get_expiration_time(app, session),
