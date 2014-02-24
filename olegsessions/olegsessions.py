@@ -4,7 +4,7 @@ import requests
 
 from datetime import datetime
 from uuid import uuid4
-import json, time
+import msgpack, time
 
 
 DEFAULT_HOST = "localhost"
@@ -31,14 +31,14 @@ class OlegDBSessionInterface(SessionInterface):
         sid = request.cookies.get(app.session_cookie_name)
         if sid:
             host_str = self._build_host_str(app.name, sid)
-            stored_session = requests.get(host_str)
+            stored_session = requests.get(host_str, stream=True)
 
             if stored_session.status_code == 200:
-                stored_json = stored_session.json()
-                expiration = stored_json['expiration']
+                stored_data = msgpack.unpackb(stored_session.raw.read(), encoding='utf-8')
+                expiration = stored_data['expiration']
                 if int(time.time()) < expiration:
-                    return OlegDBSession(initial=stored_json['data'],
-                        sid=stored_json['sid'])
+                    return OlegDBSession(initial=stored_data['data'],
+                        sid=stored_data['sid'])
                 return OlegDBSession(sid=sid)
         sid = unicode(uuid4())
         return OlegDBSession(sid=sid)
@@ -53,8 +53,6 @@ class OlegDBSessionInterface(SessionInterface):
         if not expiration:
             expiration = int(time.time()) + (60 * 60 * 24) # 24 hours
         else:
-            # We need to translate self.get_expiration_time into
-            # something KyotoTycoon expects
             expiration = int(time.time()) + int(app.config["PERMANENT_SESSION_LIFETIME"].total_seconds())
 
         data = { "sid": session.sid
@@ -63,8 +61,8 @@ class OlegDBSessionInterface(SessionInterface):
                }
 
         connect_str = self._build_host_str(app.name, session.sid)
-        resp = requests.post(connect_str,
-                data=json.dumps(data), headers={'Content-Type': 'application/json'})
+        packed = msgpack.packb(data, use_bin_type=True)
+        resp = requests.post(connect_str, data=packed)
 
         response.set_cookie(app.session_cookie_name, session.sid,
             expires=self.get_expiration_time(app, session),
