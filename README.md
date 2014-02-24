@@ -7,7 +7,7 @@ To install:
 ```
 python setup.py install
 # or from pypi:
-pip install olegdb-flask-sessions
+pip install oleg-flask-sessions
 ```
 
 
