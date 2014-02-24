@@ -12,7 +12,7 @@ pip install oleg-flask-sessions
 
 
 To use in your flask app:
-```
+```python
 from ktsessions import OlegDBSessionInterface
 ...
 app.session_interface = OlegDBSessionInterface()
