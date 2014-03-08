@@ -35,10 +35,6 @@ class OlegDBSessionInterface(SessionInterface):
 
             if stored_session.status_code == 200:
                 stored_data = msgpack.unpackb(stored_session.raw.read(), encoding='utf-8')
-                expiration = stored_data['expiration']
-                if int(time.time()) < expiration:
-                    return OlegDBSession(initial=stored_data['data'],
-                        sid=stored_data['sid'])
                 return OlegDBSession(sid=sid)
         sid = unicode(uuid4())
         return OlegDBSession(sid=sid)
@@ -51,18 +47,18 @@ class OlegDBSessionInterface(SessionInterface):
 
         expiration = self.get_expiration_time(app, session)
         if not expiration:
-            expiration = int(time.time()) + (60 * 60 * 24) # 24 hours
+            expiration = int(time.mktime(time.gmtime())) + (60 * 60 * 24) # 24 hours
         else:
-            expiration = int(time.time()) + int(app.config["PERMANENT_SESSION_LIFETIME"].total_seconds())
+            expiration = int(time.mktime(time.gmtime())) + int(app.config["PERMANENT_SESSION_LIFETIME"].total_seconds())
 
         data = { "sid": session.sid
                , "data": session
-               , "expiration": expiration
                }
 
         connect_str = self._build_host_str(app.name, session.sid)
         packed = msgpack.packb(data, use_bin_type=True)
-        resp = requests.post(connect_str, data=packed)
+        resp = requests.post(connect_str, data=packed,
+                headers={"X-OlegDB-use-by": expiration})
 
         response.set_cookie(app.session_cookie_name, session.sid,
             expires=self.get_expiration_time(app, session),
