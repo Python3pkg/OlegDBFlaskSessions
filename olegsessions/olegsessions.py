@@ -35,13 +35,13 @@ class OlegDBSessionInterface(SessionInterface):
 
             if stored_session.status_code == 200:
                 stored_data = msgpack.unpackb(stored_session.raw.read(), encoding='utf-8')
-                return OlegDBSession(sid=sid)
+                return OlegDBSession(stored_data['data'], sid=stored_data['sid'])
         sid = unicode(uuid4())
         return OlegDBSession(sid=sid)
 
     def save_session(self, app, session, response):
         domain = self.get_cookie_domain(app)
-        if not session:
+        if session is None:
             response.delete_cookie(app.session_cookie_name, domain=domain)
             return
 
