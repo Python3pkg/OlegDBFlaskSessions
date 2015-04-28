@@ -6,7 +6,7 @@ setup(
     url='https://github.com/infoforcefeed/OlegDBFlaskSessions',
     name='oleg-flask-sessions',
     description='Oleg DB backed sessions for Flask',
-    version='0.2.2',
+    version='0.2.3',
     license='BSD',
     keywords='OlegDB, Flask',
     packages=['olegsessions'],
@@ -14,6 +14,7 @@ setup(
     install_requires = [
         "werkzeug",
         "msgpack-python",
-        "flask"
+        "flask",
+        "olegdb-python"
     ]
 )
