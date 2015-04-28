@@ -3,7 +3,7 @@ from werkzeug.datastructures import CallbackDict
 import requests
 
 from datetime import datetime
-from olegdb import OlegDB, DEFAULT_HOST, DEFAULT_PORT
+from olegdb import OlegDB, DEFAULT_HOST, DEFAULT_PORT, DEFAULT_DB
 from uuid import uuid4
 import msgpack, time
 
@@ -15,15 +15,16 @@ class OlegDBSession(CallbackDict, SessionMixin):
         self.modified = False
 
 class OlegDBSessionInterface(SessionInterface):
-    def __init__(self, host=DEFAULT_HOST, port=DEFAULT_PORT):
+    def __init__(self, host=DEFAULT_HOST, port=DEFAULT_PORT, db_name=DEFAULT_DB):
         self.host = host
         self.port = port
+        self.db_name = db_name
 
     def _build_key(self, app_name, sid):
         return "{}{}".format(app_name, sid)
 
     def open_session(self, app, request):
-        db = OlegDB(self.host, self.port)
+        db = OlegDB(self.host, self.port, self.db_name)
         sid = request.cookies.get(app.session_cookie_name)
         if sid:
             host_str = self._build_key(app.name, sid)
@@ -53,7 +54,7 @@ class OlegDBSessionInterface(SessionInterface):
                }
 
         connect_str = self._build_key(app.name, session.sid)
-        db = OlegDB(self.host, self.port)
+        db = OlegDB(self.host, self.port, self.db_name)
         db.set(connect_str, data, timeout=expiration)
 
         response.set_cookie(app.session_cookie_name, session.sid,
