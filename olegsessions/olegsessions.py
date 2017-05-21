@@ -34,7 +34,7 @@ class OlegDBSessionInterface(SessionInterface):
                 stored_data = msgpack.unpackb(stored_session.raw.read(), encoding='utf-8')
                 return OlegDBSession(stored_data['data'], sid=stored_data['sid'])
 
-        sid = unicode(uuid4())
+        sid = str(uuid4())
         return OlegDBSession(sid=sid)
 
     def save_session(self, app, session, response):

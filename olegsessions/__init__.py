@@ -1,1 +1,1 @@
-from olegsessions import *
+from .olegsessions import *
